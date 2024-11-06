@@ -1,7 +1,7 @@
 {
   "name": "chai_backend",
   "version": "1.0.0",
-  "description": "A backend project with backend",
+  "description": "A backend project with chai",
   "type": "module",
   "main": "index.js",
   "scripts": {

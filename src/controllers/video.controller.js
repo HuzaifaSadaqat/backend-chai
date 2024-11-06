@@ -14,50 +14,42 @@ const getAllVideos = asyncHandler(async (req, res) => {
     res.satus(200)
 })
 
-// TODO: get video, upload to cloudinary, create video
-// get video 
-// send by multer
-// upload on cloudinary
-// get link 
-// upload in db
-// returb
 const publishAVideo = asyncHandler(async (req, res) => {
+    // TODO: get video, upload to cloudinary, create video 
+
+    const { title, description } = req.body
+    if ([title, description].some((field) => field?.trim() === "")) {
+        throw new ApiError(400, "All fields are required")
+    }
+
+    const videoLocalPath = req.files?.videoFile[0].path;
+    const thumbnailLocalPath = req.files?.thumbnail[0].path;
+
+    if (!videoLocalPath || !thumbnailLocalPath) {
+        throw new ApiError(400, "Video and thumbnail are required")
+    }
+
+    const videoFile = await uploadOnCloudinary(videoLocalPath)
+    const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
+
+    if (!videoFile || !thumbnail) {
+        throw new ApiError(400, "Video or thumbnail is not uploaded")
+    }
+
+    const video = await Video.create({
+        title,
+        description,
+        videoFile: videoFile.url,
+        thumbnail: thumbnail.url,
+        duration: videoFile.duration,
+        owner: req.user._id
+    })
+
     res
-        .satus(200)
-         
-    // const { title, description } = req.body
-    // if ([title, description].some((field) => field?.trim() === "")) {
-    //     throw new ApiError(400, "All fields are required")
-    // }
-    // console.log(req.files);
-
-    // const videoLocalPath = req.files?.video[0].path;
-    // const thumbnailLocalPath = req.files?.thumbnail[0].path;
-
-    // if (!videoLocalPath || !thumbnailLocalPath) {
-    //     throw new ApiError(400, "Video and thumbnail are required")
-    // }
-
-    // const videoFile = await uploadOnCloudinary(videoLocalPath)
-    // const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
-
-    // if (!videoFile || !coverImg) {
-    //     throw new ApiError(400, "Video or thumbnail is not uploaded")
-    // }
-
-    // const video = await Video.create({
-    //     title,
-    //     description,
-    //     videoFile: videoFile.url,
-    //     thumbnail: thumbnail.url,
-    //     duration: thumbnail.duration,
-    // })
-
-    // res
-    //     .satus(200)
-    //     .json(
-    //         new ApiResponse(200, { video }, "Video uploaded successfully")
-    //     )
+        .status(200)
+        .json(
+            new ApiResponse(200, { video }, "Video uploaded successfully")
+        )
 })
 
 const getVideoById = asyncHandler(async (req, res) => {
