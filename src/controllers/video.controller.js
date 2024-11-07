@@ -8,10 +8,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js"
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    // const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
+    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
     //TODO: get all videos based on query, sort, pagination
-
-    res.satus(200)
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
@@ -46,15 +44,31 @@ const publishAVideo = asyncHandler(async (req, res) => {
     })
 
     res
-        .status(200)
+        .status(201)
         .json(
             new ApiResponse(200, { video }, "Video uploaded successfully")
         )
 })
 
+//TODO: get video by id
 const getVideoById = asyncHandler(async (req, res) => {
+
     const { videoId } = req.params
-    //TODO: get video by id
+    if (!videoId?.trim()) {
+        throw new ApiError(400, "Video id is missing")
+    }
+
+    const video = await Video.findById(videoId)
+    if (!video) {
+        throw new ApiError(400, "Video was not found in DB")
+    }
+
+    res
+        .status(200)
+        .json(
+            new ApiResponse(200, { video }, "Video fetched successfully")
+        )
+
 })
 
 const updateVideo = asyncHandler(async (req, res) => {
