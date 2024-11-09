@@ -63,7 +63,7 @@ const getVideoById = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Video was not found in DB")
     }
 
-    res
+    return res
         .status(200)
         .json(
             new ApiResponse(200, { video }, "Video fetched successfully")
@@ -71,10 +71,47 @@ const getVideoById = asyncHandler(async (req, res) => {
 
 })
 
+//TODO: update video details like title, description, thumbnail
 const updateVideo = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
-    //TODO: update video details like title, description, thumbnail
 
+    const { videoId } = req.params
+    if (!videoId) {
+        throw new ApiError(400, "No video id was found")
+    }
+
+    const { title, description, thumbnail } = req.body
+    if ([title, description].some((field => field?.trim() === ""))) {
+        throw new ApiError(400, "All files are required")
+    }
+
+    const thumbnailLocalPath = req.file?.path
+    if (!thumbnailLocalPath) {
+        throw new ApiError(400, "Thumbnail is required")
+    }
+
+    const thumbnailUrl = await uploadOnCloudinary(thumbnailLocalPath)
+    if (!thumbnailUrl) {
+        throw new ApiError(400, "Thumbnail was not uploaded")
+    }
+
+
+    const video = await Video.findByIdAndUpdate(
+        videoId,
+        {
+            $set: {
+                title,
+                description,
+                thumbnail: thumbnailUrl.url
+            }
+        },
+        { new: true }
+    )
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, { video }, "Video updated successfully")
+        )
 })
 
 const deleteVideo = asyncHandler(async (req, res) => {

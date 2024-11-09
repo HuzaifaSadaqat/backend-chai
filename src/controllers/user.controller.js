@@ -201,9 +201,11 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 })
 
 const getCurrentUser = asyncHandler(async (req, res) => {
+    const user = req.user._id
+
     return res
         .status(200)
-        .json(200, req.user, "Current User fetched sucessfully")
+        .json(200, { user }, "Current User fetched sucessfully")
 })
 
 const updateAccountDetail = asyncHandler(async (req, res) => {
@@ -371,7 +373,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
             $lookup: {
                 from: "videos",
                 localField: "watchHistory",
-                foreignField: "_id", 
+                foreignField: "_id",
                 as: "watchHistory",
                 pipeline: [
                     {
