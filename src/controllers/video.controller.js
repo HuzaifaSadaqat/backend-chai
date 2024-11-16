@@ -79,7 +79,7 @@ const updateVideo = asyncHandler(async (req, res) => {
         throw new ApiError(400, "No video id was found")
     }
 
-    const { title, description, thumbnail } = req.body
+    const { title, description } = req.body
     if ([title, description].some((field => field?.trim() === ""))) {
         throw new ApiError(400, "All files are required")
     }
@@ -110,13 +110,30 @@ const updateVideo = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(200, { video }, "Video updated successfully")
+            new ApiResponse(200, { video, title }, "Video updated successfully")
         )
 })
 
+//TODO: delete video
 const deleteVideo = asyncHandler(async (req, res) => {
+
     const { videoId } = req.params
-    //TODO: delete video
+    if (!videoId) {
+        throw new ApiError(400, "No url was found")
+    }
+
+    const videoFound = await Video.findById(videoId)
+    if (!videoFound) {
+        throw new ApiError(400, "Video url is incorrect")
+    }
+
+    const video = await Video.findByIdAndDelete(videoId)
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, { video }, "Video was deleted")
+        )
 })
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
